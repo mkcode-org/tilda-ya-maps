@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<body style="height: 100vh; width: 100vw">
+	<div style="margin-bottom: 10px">
+		<label
+			>Категория:
+			<select id="categoryFilter">
+				<option value="">Все</option>
+				<option value="museum">Музей</option>
+				<option value="park">Парк</option>
+			</select>
+		</label>
+		<label style="margin-left: 20px"
+			>Тип:
+			<select id="typeFilter">
+				<option value="">Все</option>
+				<option value="indoor">В помещении</option>
+				<option value="outdoor">На улице</option>
+			</select>
+		</label>
+	</div>
+	<div id="map" style="width: 100%; height: 100%"></div>
+</body>
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+<script>
+	const objects = [
+		{
+			coords: [55.755, 37.618423],
+			title: 'Государственный музей',
+			image:
+				'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Museo_Estatal_de_Historia%2C_Mosc%C3%BA%2C_Rusia%2C_2016-10-03%2C_DD_49.jpg/960px-Museo_Estatal_de_Historia%2C_Mosc%C3%BA%2C_Rusia%2C_2016-10-03%2C_DD_49.jpg',
+			description: 'Известный музей в центре Москвы.',
+			category: 'museum',
+			type: 'indoor',
+      icon: 'nightHomeIcon'
+		},
+		{
+			coords: [55.72986, 37.602625],
+			title: 'Парк Горького',
+			image:
+				'https://parkgorkogo.ru/wp-content/uploads/2024/05/0V8A5319-%D0%9A%D0%BE%D0%BF%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C-scaled.jpg',
+			description: 'Популярный городской парк.',
+			category: 'park',
+			type: 'outdoor',
+      icon: 'nightParkIcon'
+		},
+		{
+			coords: [55.742687, 37.611814],
+			title: 'Галерея Искусств',
+			image:
+				'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/GES-2_%28August_2021%29-2.jpg/2560px-GES-2_%28August_2021%29-2.jpg',
+			description: 'Современная художественная галерея.',
+			category: 'museum',
+			type: 'indoor',
+      icon: 'nightFactoryIcon'
+		},
+	]
+
+	ymaps.ready(() => {
+		const map = new ymaps.Map('map', {
+			center: [55.75, 37.61],
+			zoom: 12,
+			controls: ['zoomControl'],
+      theme: 'dark'
+		})
+
+		let placemarks = []
+
+		function renderMarkers(category = '', type = '') {
+			placemarks.forEach((p) => map.geoObjects.remove(p))
+			placemarks = []
+
+			objects
+				.filter(
+					(o) =>
+						(!category || o.category === category) && (!type || o.type === type)
+				)
+				.forEach((o) => {
+					const balloon = `
+            <strong>${o.title}</strong><br>
+            <img src="${o.image}" width="100%" /><br>
+            <p>${o.description}</p>
+          `
+
+					const mark = new ymaps.Placemark(
+						o.coords,
+						{
+							balloonContent: balloon,
+              balloonStyle: {
+                
+              }
+						},
+						{
+							preset: `islands#${o.icon ?? 'icon'}`,
+							iconColor: '#3b5998',
+						}
+					)
+
+					placemarks.push(mark)
+					map.geoObjects.add(mark)
+				})
+		}
+
+		renderMarkers()
+
+		document.getElementById('categoryFilter').addEventListener('change', () => {
+			renderMarkers(
+				document.getElementById('categoryFilter').value,
+				document.getElementById('typeFilter').value
+			)
+		})
+
+		document.getElementById('typeFilter').addEventListener('change', () => {
+			renderMarkers(
+				document.getElementById('categoryFilter').value,
+				document.getElementById('typeFilter').value
+			)
+		})
+	})
+</script>
